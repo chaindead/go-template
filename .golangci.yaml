@@ -1,0 +1,129 @@
+run:
+  concurrency: 4
+  timeout: 10m
+  issues-exit-code: 2
+  tests: true
+  build-tags: []
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: '1.24'
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  path-prefix: ""
+  sort-results: true
+  sort-order:
+    - linter
+    - severity
+    - file
+  show-stats: true
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - govet
+    - gosimple
+    - ineffassign
+    - staticcheck
+    - unused
+    - depguard
+    - asciicheck
+    - bodyclose
+    - canonicalheader
+    - copyloopvar
+    - dupl
+    - errorlint
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - grouper
+    - inamedparam
+    - lll
+    - makezero
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - perfsprint
+    - prealloc
+    - revive
+    - testifylint
+    - whitespace
+    - importas
+    - wrapcheck
+    - nolintlint
+
+linters-settings:
+  lll:
+    line-length: 150
+
+  goimports:
+    local-prefixes: "github.com/chaindead/go-template"
+
+  depguard:
+    rules:
+      configuration:
+        files:
+          - $all
+          - "!**/internal/config/*.go"
+        deny:
+          - pkg: "github.com/spf13/viper"
+            desc: Should be used only in config package, to avoid boiler plate
+
+      replace-std:
+        list-mode: lax
+        files:
+          - "**/internal/**/*.go"
+        deny:
+          - pkg: "errors"
+            desc: Use github.com/pkg/errors for proper callstack logging (check README.md)
+          - pkg: "log"
+            desc: Use github.com/rs/zerolog/log as replacement
+
+  importas:
+    no-unaliased: true
+    alias:
+      # enforce easycfg like usage
+      - pkg: github.com/spf13/pflag
+        alias: cfg
+
+  wrapcheck:
+    ignoreSigs:
+      - github.com/pkg/errors.Wrap(
+      - github.com/pkg/errors.Wrapf(
+
+  gocyclo:
+    min-complexity: 15
+
+  dupl:
+    threshold: 100
+
+issues:
+  exclude-dirs-use-default: true
+  exclude-files: []
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - lll
+    - path: internal/config/
+      linters:
+        - importas
+    - path: cmd/.*\.go
+      text: "exitAfterDefer"
+      linters:
+        - gocritic
+    - text: "should be written without leading space as"
+      linters: [nolintlint]

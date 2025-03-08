@@ -1,0 +1,26 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  run:
+    desc: Local app run
+    cmds:
+      - go build -o app.out ./cmd/app/...
+      - defer: rm -f app.out
+      - ./app.out -c configs/local.config.yml --log.level debug
+
+  run-docker:
+    desc: Local docker image run
+    cmds:
+      - docker build --tag 'temp' .
+      - docker run temp
+
+  run-ci:
+    desc: Local run CI
+    preconditions:
+      - sh: gitlab-ci-local --version
+        msg: Install tool via https://github.com/firecow/gitlab-ci-local#installation
+    cmd: gitlab-ci-local
+
+  lint: golangci-lint run ./...
